@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Fetch } from '../components';
 
-const baseUrl = 'http://192.168.1.25:3000/api';
+const baseUrl = 'http://104.198.199.113:3000/api';
 const endPoints = {
   login: `${baseUrl}/auth/login`,
   register: `${baseUrl}/auth/register`,
