@@ -26,24 +26,29 @@ interface DailyDetailProps {
 }
 
 interface TimeReportProps {
-    item: ReportDetail
+    item: ReportDetail,
+    onPress: ((item: SmokeLocation) => void)
 }
 
 interface ModalProps {
     isVisible: boolean,
     data: ReportDetail[],
+    currentLocation?: SmokeLocation,
 }
 
 
-const TimeReport = ({ item }: TimeReportProps) => {
+const TimeReport = ({ item, onPress }: TimeReportProps) => {
+    const time = `${item.time.hours < 10 ? `0${item.time.hours}` : item.time.hours}:${item.time.minutes < 10 ? `0${item.time.minutes}` : item.time.minutes}:${item.time.seconds < 10 ? `0${item.time.seconds}` : item.time.seconds}`
     return (
         <>
-            <View style={{ width: GlobalStyle.width * 0.8, height: GlobalStyle.height * 0.1 }}>
-                <View style={{ backgroundColor: GlobalStyle.color.secondaryLight, width: GlobalStyle.width * 0.8, height: GlobalStyle.height * 0.08, justifyContent: 'center', alignItems: 'center', borderRadius: 100 }}>
-                    <Text style={{ fontFamily: 'RobotoRegular', fontSize: GlobalStyle.width * 0.08, color: GlobalStyle.color.primary }}>{`${item.time.hours}:${item.time.minutes}:${item.time.seconds}`}</Text>
+            <TouchableOpacity onPress={() => onPress(item.location)}>
+                <View style={{ width: GlobalStyle.width * 0.8, height: GlobalStyle.height * 0.1 }}>
+                    <View style={{ backgroundColor: GlobalStyle.color.secondaryLight, width: GlobalStyle.width * 0.8, height: GlobalStyle.height * 0.08, justifyContent: 'center', alignItems: 'center', borderRadius: 100 }}>
+                        <Text style={{ fontFamily: 'RobotoRegular', fontSize: GlobalStyle.width * 0.08, color: GlobalStyle.color.primary }}>{time}</Text>
+                    </View>
                 </View>
-            </View>
-            <Flex size={1} />
+                <Flex size={1} />
+            </TouchableOpacity>
         </>
     );
 };
@@ -119,9 +124,20 @@ export const Report = ({ navigation }: any) => {
                 <Flex size={10} />
             </View>
             <Modal isVisible={timeLine.isVisible} style={{ justifyContent: 'center', alignItems: 'center' }}>
-                <Flex size={0.5} />
+                <Flex size={0.3} />
+                <View style={{ backgroundColor: 'white' }}>
+                    <MapView scrollEnabled style={{ width: 350, height: 350 }}>
+                        {timeLine.currentLocation !== undefined && (
+                            <Marker
+                                key={timeLine.currentLocation?.x}
+                                coordinate={{ latitude: parseFloat(timeLine.currentLocation.x), longitude: parseFloat(timeLine.currentLocation.y) } as LatLng}
+                            />
+                        )}
+                    </MapView>
+                </View>
+                <Flex size={0.3} />
                 <View style={{ flex: 1.5 }}>
-                    <FlatList key={2} showsVerticalScrollIndicator={false} data={timeLine.data} renderItem={({ item }) => <TimeReport item={item} />} keyExtractor={item => `${item.time.hours}:${item.time.minutes}:${item.time.seconds}`}> </FlatList>
+                    <FlatList key={2} showsVerticalScrollIndicator={false} data={timeLine.data} renderItem={({ item }) => <TimeReport onPress={(item) => setTimeLine({ ...timeLine, currentLocation: item })} item={item} />} keyExtractor={item => `${item.time.hours}:${item.time.minutes}:${item.time.seconds}`}> </FlatList>
                 </View>
                 <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
                     <ButtonMd onPress={() => setTimeLine({ isVisible: false, data: [] })} type="success" title="Kapat" />
@@ -129,8 +145,8 @@ export const Report = ({ navigation }: any) => {
             </Modal>
             <Modal isVisible={mapView.isVisible} style={{ justifyContent: 'center', alignItems: 'center' }}>
                 <Flex size={0.5} />
-                <View style={{  backgroundColor:'white' }}>
-                    <MapView scrollEnabled style={{width:350, height:350}}>
+                <View style={{ backgroundColor: 'white' }}>
+                    <MapView scrollEnabled style={{ width: 350, height: 350 }}>
                         {mapView.data.map((report: ReportDetail, index: number) => (
                             <Marker
                                 key={index}
